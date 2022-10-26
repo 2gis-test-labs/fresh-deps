@@ -1,4 +1,4 @@
-from . import main
+from ._update_dependencies import update_dependencies
 
 if __name__ == "__main__":
-    main()
+    update_dependencies()
