@@ -27,13 +27,13 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     args = parser.parse_args()
 
     requirements_in = args.requirements_in.absolute().relative_to(Path.cwd())
-    assert requirements_in.exists(), "File '{requirements_in}' does not exist"
+    assert requirements_in.exists(), f"File '{requirements_in}' does not exist"
 
     if args.requirements_out is None:
         requirements_out = requirements_in.with_suffix(".txt")
     else:
         requirements_out = args.requirements_out.absolute().relative_to(Path.cwd())
-    assert requirements_out.exists(), "File '{requirements_out}' does not exist"
+    assert requirements_out.exists(), f"File '{requirements_out}' does not exist"
 
     assert args.gitlab_project_id, "Project ID is required"
     assert args.gitlab_private_token, "Private token is required"

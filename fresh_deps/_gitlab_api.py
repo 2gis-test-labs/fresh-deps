@@ -36,7 +36,7 @@ class GitLabAPI(ServiceAPI):
             "start_branch": self._default_branch,
             "actions": [
                 {
-                    "action": "create",
+                    "action": "update",
                     "file_path": str(path),
                     "content": self._get_file_content(path),
                 }

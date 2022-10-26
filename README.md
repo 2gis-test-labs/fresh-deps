@@ -18,7 +18,7 @@ $ fresh-deps requirements.in --gitlab-project-id=<id> --gitlab-private-token=<to
 **or via docker**
 
 ```shell
-$ docker run -v `pwd`:/workdir 2gistestlabs/fresh-deps requirements.in \
+$ docker run -v `pwd`:/workdir 2gistestlabs/fresh-deps fresh-deps requirements.in \
     --gitlab-project-id=<id> \
     --gitlab-private-token=<token>
 ```
