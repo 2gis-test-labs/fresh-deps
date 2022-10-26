@@ -23,6 +23,12 @@ setup(
     url="https://github.com/2gis-test-labs/fresh-deps",
     packages=find_packages(exclude=("tests",)),
     package_data={"fresh_deps": ["py.typed"]},
+    entry_points={
+        "console_scripts": [
+            "fresh-deps = fresh_deps:update_dependencies",
+            "fresh_deps = fresh_deps:update_dependencies",
+        ],
+    },
     install_requires=find_required(),
     tests_require=find_dev_required(),
     classifiers=[
