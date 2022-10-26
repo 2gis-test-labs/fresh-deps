@@ -33,6 +33,8 @@ def update_dependencies() -> None:
         requirements_out = args.requirements_out.absolute()
     assert requirements_out.exists(), "File '{requirements_out}' does not exist"
 
+    assert args.gitlab_project_id, "Project ID is required"
+
     try:
         service_api = GitLabAPI(args.gitlab_url, args.gitlab_private_token,
                                 args.gitlab_project_id, args.gitlab_default_branch)
