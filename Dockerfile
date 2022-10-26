@@ -6,5 +6,3 @@ RUN pip3 install fresh-deps \
       --root-user-action=ignore
 
 WORKDIR /workdir
-
-ENTRYPOINT ["fresh_deps"]
