@@ -22,3 +22,22 @@ $ docker run -v `pwd`:/workdir 2gistestlabs/fresh-deps fresh-deps requirements.i
     --gitlab-project-id=<id> \
     --gitlab-private-token=<token>
 ```
+
+### GitLab CI
+
+Add [job](https://docs.gitlab.com/ee/ci/jobs/) and create [scheduled pipeline](https://docs.gitlab.com/ee/ci/pipelines/schedules.html)
+
+```yml
+stages:
+  - update_dependencies
+
+fresh_deps:
+  stage: update_dependencies
+  image: 2gistestlabs/fresh-deps:0.3.0
+  variables:
+    CI_PRIVATE_TOKEN: $GITLAB_PRIVATE_TOKEN
+  script:
+    - fresh-deps requirements.in
+  only:
+    - schedules
+```
