@@ -1,0 +1,6 @@
+baby-steps==1.2.1
+flake8==5.0.4
+isort==5.10.1
+mypy==0.982
+mypy-extensions==0.4.3
+pytest==7.2.0
