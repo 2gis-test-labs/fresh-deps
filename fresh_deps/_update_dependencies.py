@@ -1,6 +1,7 @@
 import argparse
 from os import environ
 from pathlib import Path
+from typing import Any, Callable
 
 from ._dependency_updater import DependencyUpdater, MergeRequestExists, NothingToUpdate
 from ._gitlab_api import GitLabAPI
@@ -8,7 +9,7 @@ from ._gitlab_api import GitLabAPI
 __all__ = ("update_dependencies",)
 
 
-def update_dependencies() -> None:
+def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("requirements_in", type=Path)
@@ -24,13 +25,14 @@ def update_dependencies() -> None:
 
     args = parser.parse_args()
 
-    requirements_in = args.requirements_in.absolute()
+    pwd = Path.cwd()
+    requirements_in = args.requirements_in.absolute().relative_to(pwd)
     assert requirements_in.exists(), "File '{requirements_in}' does not exist"
 
     if args.requirements_out is None:
         requirements_out = requirements_in.with_suffix(".txt")
     else:
-        requirements_out = args.requirements_out.absolute()
+        requirements_out = args.requirements_out.absolute().relative_to(pwd)
     assert requirements_out.exists(), "File '{requirements_out}' does not exist"
 
     assert args.gitlab_project_id, "Project ID is required"
@@ -45,8 +47,8 @@ def update_dependencies() -> None:
     try:
         merge_request = dependency_updater.update(requirements_in, requirements_out)
     except NothingToUpdate as e:
-        print(f"Nothing to update ({e})")
+        logger(f"Nothing to update ({e})")
     except MergeRequestExists as e:
-        print(f"Merge request already exists ({e})")
+        logger(f"Merge request already exists ({e})")
     else:
-        print(f"New merge request created: {merge_request.url}")
+        logger(f"New merge request created: {merge_request.url}")

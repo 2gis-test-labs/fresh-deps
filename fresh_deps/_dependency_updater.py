@@ -30,13 +30,16 @@ class DependencyUpdater:
             content = f.read()
         return sha256(content).hexdigest()
 
+    def _run_pip_compile(self, requirements_in: Path, requirements_out: Path) -> None:
+        local["pip-compile"](requirements_in, "--upgrade", "--output-file", requirements_out)
+
     def update(self, requirements_in: Path, requirements_out: Path, *,
                branch_prefix: str = "fresh-deps") -> MergeRequest:
         commit_message = "update dependencies"
         merge_request_title = "fresh-deps: update dependencies"
 
         hash_before = self._get_file_hash(requirements_out)
-        local["pip-compile"](requirements_in, "--upgrade")
+        self._run_pip_compile(requirements_in, requirements_out)
 
         hash_after = self._get_file_hash(requirements_out)
         hash_short = hash_after[:10]
