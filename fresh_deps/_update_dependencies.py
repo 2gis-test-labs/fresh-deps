@@ -21,21 +21,22 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
                         default=environ.get("CI_PROJECT_ID", ""))
     parser.add_argument("--gitlab-default-branch",
                         default=environ.get("CI_DEFAULT_BRANCH", "main"))
-    parser.add_argument("--gitlab-private-token", required=True)
+    parser.add_argument("--gitlab-private-token",
+                        default=environ.get("CI_PRIVATE_TOKEN", ""))
 
     args = parser.parse_args()
 
-    pwd = Path.cwd()
-    requirements_in = args.requirements_in.absolute().relative_to(pwd)
+    requirements_in = args.requirements_in.absolute().relative_to(Path.cwd())
     assert requirements_in.exists(), "File '{requirements_in}' does not exist"
 
     if args.requirements_out is None:
         requirements_out = requirements_in.with_suffix(".txt")
     else:
-        requirements_out = args.requirements_out.absolute().relative_to(pwd)
+        requirements_out = args.requirements_out.absolute().relative_to(Path.cwd())
     assert requirements_out.exists(), "File '{requirements_out}' does not exist"
 
     assert args.gitlab_project_id, "Project ID is required"
+    assert args.gitlab_private_token, "Private token is required"
 
     try:
         service_api = GitLabAPI(args.gitlab_url, args.gitlab_private_token,
