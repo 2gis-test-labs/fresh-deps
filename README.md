@@ -9,5 +9,5 @@ $ pip3 install fresh-deps
 ## Usage
 
 ```shell
-$ python3 -m fresh_deps requirements.in --gitlab-private-token=<token> --gitlab-project-id=<id>
+$ fresh-deps requirements.in --gitlab-project-id=<id> --gitlab-private-token=<token>
 ```
