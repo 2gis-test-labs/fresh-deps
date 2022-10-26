@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="fresh-deps",
-    version="0.1.3",
+    version="0.2.0",
     description="",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
