@@ -31,9 +31,10 @@ class DependencyUpdater:
         self._service_api = service_api
 
     def _get_file_hash(self, path: Path) -> str:
-        with open(path, "rb") as f:
-            content = f.read()
-        return sha256(content).hexdigest()
+        with open(path, "r") as f:
+            content = f.readlines()
+        lines = [x for x in content if not x.strip().startswith("#")]
+        return sha256("".join(lines).encode()).hexdigest()
 
     def _run_pip_compile(self, requirements_in: Path, requirements_out: Path) -> None:
         local["pip-compile"](requirements_in, "--upgrade", "--output-file", requirements_out)
@@ -44,6 +45,7 @@ class DependencyUpdater:
         commit_message = "update dependencies"
         merge_request_title = "fresh-deps: update dependencies"
 
+        assignee_id = None
         if assignee is not None:
             assignee_id = self._service_api.get_user_id(assignee)
             if assignee_id is None:
