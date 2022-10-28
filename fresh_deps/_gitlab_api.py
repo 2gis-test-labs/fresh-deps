@@ -16,11 +16,10 @@ class GitLabAPI(ServiceAPI):
         self._default_branch = default_branch
         self._project = self._gitlab.projects.get(self._project_id)
 
+    # Docs https://docs.gitlab.com/ee/api/merge_requests.html#list-merge-requests
     def get_merge_requests(self) -> List[MergeRequest]:
         merge_requests = []
-        for mr in self._project.mergerequests.list():
-            if mr.state != "opened":
-                continue
+        for mr in self._project.mergerequests.list(state="opened", per_page=50, iterator=True):
             merge_requests.append(MergeRequest(mr.source_branch, mr.web_url))
         return merge_requests
 
@@ -28,6 +27,7 @@ class GitLabAPI(ServiceAPI):
         with open(path) as f:
             return f.read()
 
+    # https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
     def commit_file(self, path: Path, message: str, source_branch: str) -> None:
         self._project.commits.create({
             "id": self._project_id,
@@ -43,6 +43,7 @@ class GitLabAPI(ServiceAPI):
             ]
         })
 
+    # Docs https://docs.gitlab.com/ee/api/merge_requests.html#create-mr
     def create_merge_request(self, source_branch: str, title: str) -> MergeRequest:
         merge_request = self._project.mergerequests.create({
             "source_branch": source_branch,
