@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 from gitlab import Gitlab
 
@@ -15,6 +15,13 @@ class GitLabAPI(ServiceAPI):
         self._project_id = project_id
         self._default_branch = default_branch
         self._project = self._gitlab.projects.get(self._project_id)
+
+    # Docs https://docs.gitlab.com/ee/api/users.html#list-users
+    def get_user_id(self, username: str) -> Union[str, None]:
+        users = self._gitlab.users.list(username=username)
+        if len(users) == 0:
+            return None
+        return str(users[0].id)  # type: ignore
 
     # Docs https://docs.gitlab.com/ee/api/merge_requests.html#list-merge-requests
     def get_merge_requests(self) -> List[MergeRequest]:
@@ -44,10 +51,14 @@ class GitLabAPI(ServiceAPI):
         })
 
     # Docs https://docs.gitlab.com/ee/api/merge_requests.html#create-mr
-    def create_merge_request(self, source_branch: str, title: str) -> MergeRequest:
+    def create_merge_request(self, source_branch: str, title: str, *,
+                             assignee_id: Optional[str] = None) -> MergeRequest:
         merge_request = self._project.mergerequests.create({
             "source_branch": source_branch,
             "target_branch": self._default_branch,
             "title": title,
+            "remove_source_branch": True,
+            "squash": True,
+            "assignee_id": assignee_id,
         })
         return MergeRequest(source_branch, merge_request.web_url)

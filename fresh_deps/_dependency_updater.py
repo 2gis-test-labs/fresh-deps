@@ -1,12 +1,13 @@
 from hashlib import sha256
 from pathlib import Path
 from time import time
+from typing import Optional
 
 from plumbum import local
 
 from ._service_api import MergeRequest, ServiceAPI
 
-__all__ = ("DependencyUpdater", "NothingToUpdate", "MergeRequestExists",)
+__all__ = ("DependencyUpdater", "NothingToUpdate", "MergeRequestExists", "UserNotFound",)
 
 
 class _DependencyUpdaterException(Exception):
@@ -18,6 +19,10 @@ class NothingToUpdate(_DependencyUpdaterException):
 
 
 class MergeRequestExists(_DependencyUpdaterException):
+    pass
+
+
+class UserNotFound(_DependencyUpdaterException):
     pass
 
 
@@ -34,9 +39,15 @@ class DependencyUpdater:
         local["pip-compile"](requirements_in, "--upgrade", "--output-file", requirements_out)
 
     def update(self, requirements_in: Path, requirements_out: Path, *,
+               assignee: Optional[str] = None,
                branch_prefix: str = "fresh-deps") -> MergeRequest:
         commit_message = "update dependencies"
         merge_request_title = "fresh-deps: update dependencies"
+
+        if assignee is not None:
+            assignee_id = self._service_api.get_user_id(assignee)
+            if assignee_id is None:
+                raise UserNotFound(assignee)
 
         hash_before = self._get_file_hash(requirements_out)
         self._run_pip_compile(requirements_in, requirements_out)
@@ -55,5 +66,6 @@ class DependencyUpdater:
                 raise MergeRequestExists(merge_request.url)
 
         self._service_api.commit_file(requirements_out, commit_message, branch_name)
-        mr = self._service_api.create_merge_request(branch_name, merge_request_title)
+        mr = self._service_api.create_merge_request(branch_name, merge_request_title,
+                                                    assignee_id=assignee_id)
         return mr

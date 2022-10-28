@@ -12,17 +12,30 @@ __all__ = ("update_dependencies",)
 def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("requirements_in", type=Path)
-    parser.add_argument("--output-file", type=Path, nargs="?", default=None)
+    parser.add_argument("requirements_in", type=Path,
+                        help="Path to requirements.in")
+    parser.add_argument("--output-file", type=Path, nargs="?", default=None,
+                        help="Path to requirements.txt")
 
+    default_gitlab_url = "https://gitlab.com"
     parser.add_argument("--gitlab-url",
-                        default=environ.get("CI_SERVER_URL", "https://gitlab.com"))
+                        default=environ.get("CI_SERVER_URL", default_gitlab_url),
+                        help="GitLab server URL "
+                             f"(default: $CI_SERVER_URL or '{default_gitlab_url}')")
     parser.add_argument("--gitlab-project-id",
-                        default=environ.get("CI_PROJECT_ID", ""))
+                        default=environ.get("CI_PROJECT_ID", ""),
+                        help="GitLab project ID (defaulT: $CI_PROJECT_ID)")
+    default_gitlab_branch = "main"
     parser.add_argument("--gitlab-default-branch",
-                        default=environ.get("CI_DEFAULT_BRANCH", "main"))
+                        default=environ.get("CI_DEFAULT_BRANCH", default_gitlab_branch),
+                        help="GitLab default branch "
+                             f"(default: $CI_DEFAULT_BRANCH or '{default_gitlab_branch}')")
+    docs_url = "https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html"
     parser.add_argument("--gitlab-private-token",
-                        default=environ.get("CI_PRIVATE_TOKEN", ""))
+                        default=environ.get("CI_PRIVATE_TOKEN", ""),
+                        help="GitLab private token "
+                             f"(default: $CI_PRIVATE_TOKEN), documentation {docs_url}")
+    parser.add_argument("--gitlab-assignee", help="GitLab assignee username (example: 'root')")
 
     args = parser.parse_args()
 
@@ -46,7 +59,8 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
 
     dependency_updater = DependencyUpdater(service_api)
     try:
-        merge_request = dependency_updater.update(requirements_in, requirements_out)
+        merge_request = dependency_updater.update(requirements_in, requirements_out,
+                                                  assignee=args.gitlab_assignee or None)
     except NothingToUpdate as e:
         logger(f"Nothing to update ({e})")
     except MergeRequestExists as e:
