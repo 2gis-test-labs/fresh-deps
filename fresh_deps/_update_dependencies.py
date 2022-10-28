@@ -13,7 +13,7 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("requirements_in", type=Path)
-    parser.add_argument("requirements_out", type=Path, nargs="?", default=None)
+    parser.add_argument("--output-file", type=Path, nargs="?", default=None)
 
     parser.add_argument("--gitlab-url",
                         default=environ.get("CI_SERVER_URL", "https://gitlab.com"))
@@ -29,10 +29,10 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     requirements_in = args.requirements_in.absolute().relative_to(Path.cwd())
     assert requirements_in.exists(), f"File '{requirements_in}' does not exist"
 
-    if args.requirements_out is None:
+    if args.output_file is None:
         requirements_out = requirements_in.with_suffix(".txt")
     else:
-        requirements_out = args.requirements_out.absolute().relative_to(Path.cwd())
+        requirements_out = args.output_file.absolute().relative_to(Path.cwd())
     assert requirements_out.exists(), f"File '{requirements_out}' does not exist"
 
     assert args.gitlab_project_id, "Project ID is required"
