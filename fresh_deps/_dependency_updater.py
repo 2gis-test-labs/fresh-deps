@@ -27,17 +27,20 @@ class UserNotFound(_DependencyUpdaterException):
 
 
 class DependencyUpdater:
-    def __init__(self, service_api: ServiceAPI) -> None:
+    def __init__(self, service_api: ServiceAPI, pypi_index_url: str) -> None:
         self._service_api = service_api
+        self._py_index_url = pypi_index_url
 
     def _get_file_hash(self, path: Path) -> str:
         with open(path, "r") as f:
             content = f.readlines()
-        lines = [x for x in content if not x.strip().startswith("#")]
+        lines = [x for x in content if x.strip() and not x.strip().startswith("#")]
         return sha256("".join(lines).encode()).hexdigest()
 
     def _run_pip_compile(self, requirements_in: Path, requirements_out: Path) -> None:
-        local["pip-compile"](requirements_in, "--upgrade", "--output-file", requirements_out)
+        local["pip-compile"](requirements_in, "--upgrade",
+                             "--index-url", self._py_index_url,
+                             "--output-file", requirements_out)
 
     def update(self, requirements_in: Path, requirements_out: Path, *,
                assignee: Optional[str] = None,

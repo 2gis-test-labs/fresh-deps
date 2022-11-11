@@ -5,6 +5,10 @@ install:
 	pip3 install --quiet --upgrade pip
 	pip3 install --quiet -r requirements.txt -r requirements-dev.txt
 
+.PHONY: install-fresh-deps
+install-fresh-deps:
+	python3 setup.py install
+
 .PHONY: build
 build:
 	pip3 install --quiet --upgrade pip
@@ -17,11 +21,7 @@ publish:
 
 .PHONY: test
 test:
-	python3 -m pytest
-
-.PHONY: coverage
-coverage:
-	python3 -m pytest --cov --cov-report=term --cov-report=xml:$(or $(COV_REPORT_DEST),coverage.xml)
+	@cd tests && vedro run -vvv
 
 .PHONY: check-types
 check-types:
