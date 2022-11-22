@@ -10,7 +10,7 @@ class Config(vedro.Config):
         class RichReporter(vedro.Config.Plugins.RichReporter):
             enabled = True
             show_timings = True
-            show_scenario_spinner = True
+            show_scenario_spinner = False
 
         class ValeraValidator(valera_validator.ValeraValidator):
             enabled = True

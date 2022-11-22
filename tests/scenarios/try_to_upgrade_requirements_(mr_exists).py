@@ -62,13 +62,10 @@ class Scenario(vedro.Scenario):
         assert self.output == schema.str(f"Merge request already exists ({web_url})\n")
 
     def and_it_should_send_request_to_gitlab_projects(self):
+        self.gitlab_headers = [..., ["PRIVATE-TOKEN", self.token], ...]
         assert self.mock_project.history == HistorySchema % [{
             "request": {
-                "headers":  [
-                    ...,
-                    ["PRIVATE-TOKEN", self.token],
-                    ...
-                ]
+                "headers":  self.gitlab_headers
             }
         }]
 
@@ -84,10 +81,6 @@ class Scenario(vedro.Scenario):
                     ["state", "opened"],
                     ["per_page", "50"],
                 ],
-                "headers": [
-                    ...,
-                    ["PRIVATE-TOKEN", self.token],
-                    ...
-                ]
+                "headers": self.gitlab_headers
             }
         }]
