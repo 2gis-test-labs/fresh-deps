@@ -17,8 +17,9 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     parser.add_argument("--output-file", type=Path, nargs="?", default=None,
                         help="Path to requirements.txt")
 
-    parser.add_argument("--pypi-index-url", default="https://pypi.org/simple",
-                        help="PyPI index URL")
+    default_pypi_index = "https://pypi.org/simple"
+    parser.add_argument("--pypi-index-url", default=default_pypi_index,
+                        help="PyPI index URL (default: {default_pypi_index})")
 
     default_gitlab_url = "https://gitlab.com"
     parser.add_argument("--gitlab-url",

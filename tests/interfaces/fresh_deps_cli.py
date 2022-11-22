@@ -1,6 +1,6 @@
 import vedro
 from config import Config
-from plumbum import local
+from plumbum import ProcessExecutionError, local
 
 
 class FreshDepsCLI(vedro.Interface):
@@ -11,10 +11,15 @@ class FreshDepsCLI(vedro.Interface):
 
     async def run(self, requirements_in: str, requirements_out: str, *,
                   gitlab_project_id: int, gitlab_private_token: str) -> str:
-        res = local["fresh-deps"](requirements_in,
-                                  f"--output-file={requirements_out}",
-                                  f"--pypi-index-url={self.pypi_index_url}",
-                                  f"--gitlab-project-id={gitlab_project_id}",
-                                  f"--gitlab-private-token={gitlab_private_token}",
-                                  f"--gitlab-url={self.gitlab_url}")
-        return res
+        try:
+            output = local["fresh-deps"](
+                requirements_in,
+                f"--output-file={requirements_out}",
+                f"--pypi-index-url={self.pypi_index_url}",
+                f"--gitlab-project-id={gitlab_project_id}",
+                f"--gitlab-private-token={gitlab_private_token}",
+                f"--gitlab-url={self.gitlab_url}"
+            )
+        except ProcessExecutionError as e:
+            output = repr(e)
+        return output

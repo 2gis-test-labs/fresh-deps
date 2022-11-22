@@ -2,7 +2,7 @@ import io
 import tarfile
 from contextlib import asynccontextmanager
 from hashlib import sha256
-from typing import Generator, List, Tuple
+from typing import Any, Dict, Generator, List, Tuple
 
 import jj
 import vedro
@@ -21,17 +21,9 @@ def _create_tar(package: str, version: str) -> bytes:
     return output.getvalue()
 
 
-@vedro.context
-@asynccontextmanager
-async def mocked_pypi_package(package: str,
-                              versions: List[str]) -> Generator[Tuple[Mocked, Mocked], None, None]:
-    assert len(versions) == 1
-    version = versions[0]
+def _make_version_info(package: str, version: str) -> Tuple[Dict[str, Any], bytes]:
     tar = _create_tar(package, version)
-    file_matcher = jj.match("GET", f"/packages/{package}-{version}.tar.gz")
-    file_response = jj.Response(body=tar)
-
-    files = [{
+    version_info = {
         "filename": f"{package}-{version}.tar.gz",
         "hashes": {
             "sha256": sha256(tar).hexdigest()
@@ -39,23 +31,32 @@ async def mocked_pypi_package(package: str,
         "requires-python": None,
         "url": f"{_REMOTE_MOCK_URL}/packages/{package}-{version}.tar.gz",
         "yanked": False,
-    }]
+    }
+    return version_info, tar
+
+
+@vedro.context
+@asynccontextmanager
+async def mocked_pypi_package(package: str,
+                              versions: List[str]) -> Generator[Tuple[Mocked, Mocked], None, None]:
+    assert len(versions) > 0
+    latest_version = versions[0]
+
+    version_info, tar = _make_version_info(package, latest_version)
     payload = {
         "meta": {
             "_last-serial": 1,
             "api-version": "1.0"
         },
         "name": package,
-        "files": files,
+        "files": [version_info],
     }
     package_matcher = jj.match("GET", f"/simple/{package}/")
     package_response = jj.Response(json=payload, headers={
         "Content-Type": "application/vnd.pypi.simple.v1+json"
     })
-
     async with mocked(package_matcher, package_response) as package_mock:
+        file_matcher = jj.match("GET", f"/packages/{package}-{latest_version}.tar.gz")
+        file_response = jj.Response(body=tar)
         async with mocked(file_matcher, file_response) as file_mock:
             yield package_mock, file_mock
-
-    assert len(package_mock.history) == 1
-    assert len(file_mock.history) == 1

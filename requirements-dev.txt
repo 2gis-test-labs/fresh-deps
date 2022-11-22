@@ -1,9 +1,10 @@
 flake8==5.0.4
 isort==5.10.1
-mypy==0.982
+mypy==0.991
 mypy-extensions==0.4.3
 d42==1.5.0
+jj_district42==1.0.0
 cabina==0.7.1
-vedro==1.7.2
-vedro-jj==0.1.0
+vedro==1.8.1
+vedro-jj==0.1.1
 vedro-valera-validator==1.1.0
