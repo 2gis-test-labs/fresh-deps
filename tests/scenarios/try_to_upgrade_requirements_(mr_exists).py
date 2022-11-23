@@ -8,7 +8,7 @@ from contexts import (
 )
 from d42 import fake
 from district42 import schema
-from helpers import gen_version, next_version
+from helpers import gen_version, make_branch_name, next_version
 from interfaces import FreshDepsCLI
 from jj_district42 import HistorySchema
 from schemas import (
@@ -46,7 +46,7 @@ class Scenario(vedro.Scenario):
 
     def given_gitlab_mrs(self):
         self.merge_request = fake(GitLabMergeRequestSchema % {
-            "source_branch": f"fresh-deps-{self.hash_after[:10]}"
+            "source_branch": make_branch_name(self.hash_after)
         })
 
     async def when_user_upgrades_requirements(self):
