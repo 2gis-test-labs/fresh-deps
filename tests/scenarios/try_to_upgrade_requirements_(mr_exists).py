@@ -53,13 +53,16 @@ class Scenario(vedro.Scenario):
         async with mocked_gitlab_project(self.project) as self.mock_project, \
                    mocked_pypi_package(self.package_name, [self.latest_version]) as self.mock_pypi, \
                    mocked_gitlab_mrs(self.project, [self.merge_request]) as self.mock_mrs:
-            self.output = await FreshDepsCLI().run(self.req_in, self.req_txt,
-                                                   gitlab_project_id=self.project["id"],
-                                                   gitlab_private_token=self.token)
+            self.stdout, self.stderr = await FreshDepsCLI().run(
+                requirements_in=self.req_in,
+                requirements_out=self.req_txt,
+                gitlab_project_id=self.project["id"],
+                gitlab_private_token=self.token
+            )
 
     def then_it_should_return_info_message(self):
         web_url = self.merge_request["web_url"]
-        assert self.output == schema.str(f"Merge request already exists ({web_url})\n")
+        assert self.stdout == schema.str(f"Merge request already exists ({web_url})\n")
 
     def and_it_should_send_request_to_gitlab_projects(self):
         self.gitlab_headers = [..., ["PRIVATE-TOKEN", self.token], ...]

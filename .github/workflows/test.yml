@@ -25,10 +25,5 @@ jobs:
       run: make install
     - name: Lint
       run: make lint
-    - name: Run mock
-      run: docker-compose up -d
     - name: Test
       run: make install-fresh-deps test
-    - name: Clean up
-      if: always()
-      run: docker-compose down || true

@@ -24,7 +24,7 @@ class Scenario(vedro.Scenario):
 
     def given_requirements_txt(self):
         self.fixed_version = gen_version()
-        self.req_out, self.hash = created_requirements_txt([
+        self.req_txt, self.hash = created_requirements_txt([
             f"{self.package_name}=={self.fixed_version}"
         ])
 
@@ -35,13 +35,16 @@ class Scenario(vedro.Scenario):
     async def when_user_upgrades_requirements(self):
         async with mocked_gitlab_project(self.project) as self.mock_gitlab, \
                    mocked_pypi_package(self.package_name, [self.fixed_version]) as self.mock_pypi:
-            self.output = await FreshDepsCLI().run(self.req_in, self.req_out,
-                                                   gitlab_project_id=self.project["id"],
-                                                   gitlab_private_token=self.token)
+            self.stdout, self.stderr = await FreshDepsCLI().run(
+                requirements_in=self.req_in,
+                requirements_out=self.req_txt,
+                gitlab_project_id=self.project["id"],
+                gitlab_private_token=self.token
+            )
 
     def then_it_should_return_info_message(self):
         hash_short = self.hash[:10]
-        assert self.output == schema.str(f"Nothing to update ({hash_short})\n")
+        assert self.stdout == schema.str(f"Nothing to update ({hash_short})\n")
 
     def and_it_should_send_request_to_gitlab(self):
         assert self.mock_gitlab.history == HistorySchema % [{
