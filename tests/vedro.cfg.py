@@ -16,7 +16,7 @@ class Config(vedro.Config):
             enabled = True
 
         class RemoteMock(vedro_jj.RemoteMock):
-            enabled = False
-            threaded = True
+            enabled = True
+            threaded = False
             host = "localhost"
             port = 8080

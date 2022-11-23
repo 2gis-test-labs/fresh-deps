@@ -46,12 +46,15 @@ class Scenario(vedro.Scenario):
     async def when_user_upgrades_requirements(self):
         async with mocked_gitlab(self.project, self.merge_requests, self.web_url) as self.mock_gitlab, \
                    mocked_pypi_package(self.package_name, [self.latest_version]) as self.mock_pypi:
-            self.output = await FreshDepsCLI().run(self.req_in, self.req_txt,
-                                                   gitlab_project_id=self.project["id"],
-                                                   gitlab_private_token=self.token)
+            self.stdout, self.stderr = await FreshDepsCLI().run(
+                requirements_in=self.req_in,
+                requirements_out=self.req_txt,
+                gitlab_project_id=self.project["id"],
+                gitlab_private_token=self.token
+            )
 
     def then_it_should_return_success_message(self):
-        assert self.output == schema.str(f"New merge request created: {self.web_url}\n")
+        assert self.stdout == schema.str(f"New merge request created: {self.web_url}\n")
 
     def and_it_should_send_request_to_gitlab_projects(self):
         self.gitlab_headers = [..., ["PRIVATE-TOKEN", self.token], ...]
