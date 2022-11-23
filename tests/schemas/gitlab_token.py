@@ -1,3 +1,3 @@
 from d42 import schema
 
-GitLabPrivateToken = schema.str.len(6, 12)
+GitLabPrivateToken = schema.str.regex(r"[a-z]{6,12}")
