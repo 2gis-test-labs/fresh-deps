@@ -17,6 +17,10 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     parser.add_argument("--output-file", type=Path, nargs="?", default=None,
                         help="Path to requirements.txt")
 
+    default_pypi_index = "https://pypi.org/simple"
+    parser.add_argument("--pypi-index-url", default=default_pypi_index,
+                        help="PyPI index URL (default: {default_pypi_index})")
+
     default_gitlab_url = "https://gitlab.com"
     parser.add_argument("--gitlab-url",
                         default=environ.get("CI_SERVER_URL", default_gitlab_url),
@@ -57,7 +61,7 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     except BaseException as e:
         raise ConnectionError(f"Could not connect to GitLab: '{args.gitlab_url}'") from e
 
-    dependency_updater = DependencyUpdater(service_api)
+    dependency_updater = DependencyUpdater(service_api, args.pypi_index_url)
     try:
         merge_request = dependency_updater.update(requirements_in, requirements_out,
                                                   assignee=args.gitlab_assignee or None)
