@@ -7,7 +7,8 @@ from plumbum import local
 
 from ._service_api import MergeRequest, ServiceAPI
 
-__all__ = ("DependencyUpdater", "NothingToUpdate", "MergeRequestExists", "UserNotFound",)
+__all__ = ("DependencyUpdater", "NothingToUpdate", "MergeRequestExists",
+           "AnotherMergeRequestExists", "UserNotFound",)
 
 
 class _DependencyUpdaterException(Exception):
@@ -19,6 +20,10 @@ class NothingToUpdate(_DependencyUpdaterException):
 
 
 class MergeRequestExists(_DependencyUpdaterException):
+    pass
+
+
+class AnotherMergeRequestExists(_DependencyUpdaterException):
     pass
 
 
@@ -44,6 +49,7 @@ class DependencyUpdater:
 
     def update(self, requirements_in: Path, requirements_out: Path, *,
                assignee: Optional[str] = None,
+               allow_multiple_mrs: bool = False,
                branch_prefix: str = "fresh-deps") -> MergeRequest:
         commit_message = "update dependencies"
         merge_request_title = "fresh-deps: update dependencies"
@@ -63,12 +69,16 @@ class DependencyUpdater:
             raise NothingToUpdate(hash_short)
 
         branch_name = "{}-{}-{}".format(branch_prefix, int(time()), hash_short)
-
         merge_requests = self._service_api.get_merge_requests()
+
         for merge_request in merge_requests:
             source_branch = merge_request.source_branch
             if source_branch.startswith(branch_prefix) and source_branch.endswith(hash_short):
                 raise MergeRequestExists(merge_request.url)
+
+        for merge_request in merge_requests:
+            if merge_request.source_branch.startswith(branch_prefix) and (not allow_multiple_mrs):
+                raise AnotherMergeRequestExists(merge_request.url)
 
         self._service_api.commit_file(requirements_out, commit_message, branch_name)
         mr = self._service_api.create_merge_request(branch_name, merge_request_title,
