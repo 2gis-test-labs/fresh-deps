@@ -3,14 +3,20 @@ from os import environ
 from pathlib import Path
 from typing import Any, Callable
 
-from ._dependency_updater import DependencyUpdater, MergeRequestExists, NothingToUpdate
+from ._dependency_updater import (
+    AnotherMergeRequestExists,
+    DependencyUpdater,
+    MergeRequestExists,
+    NothingToUpdate,
+)
 from ._gitlab_api import GitLabAPI
 
 __all__ = ("update_dependencies",)
 
 
 def update_dependencies(logger: Callable[[str], Any] = print) -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser("fresh-deps",
+                                     description="Keep your Python dependencies fresh")
 
     parser.add_argument("requirements_in", type=Path,
                         help="Path to requirements.in")
@@ -40,6 +46,8 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
                         help="GitLab private token "
                              f"(default: $CI_PRIVATE_TOKEN), documentation {docs_url}")
     parser.add_argument("--gitlab-assignee", help="GitLab assignee username (example: 'root')")
+    parser.add_argument("--gitlab-allow-multiple-mrs", action="store_true", default=False,
+                        help="Allow multiple opened merge requests")
 
     args = parser.parse_args()
 
@@ -64,10 +72,13 @@ def update_dependencies(logger: Callable[[str], Any] = print) -> None:
     dependency_updater = DependencyUpdater(service_api, args.pypi_index_url)
     try:
         merge_request = dependency_updater.update(requirements_in, requirements_out,
-                                                  assignee=args.gitlab_assignee or None)
+                                                  assignee=args.gitlab_assignee or None,
+                                                  allow_multiple_mrs=args.gitlab_allow_multiple_mrs)
     except NothingToUpdate as e:
         logger(f"Nothing to update ({e})")
     except MergeRequestExists as e:
         logger(f"Merge request already exists ({e})")
+    except AnotherMergeRequestExists as e:
+        logger(f"Another merge request exists ({e})")
     else:
         logger(f"New merge request created: {merge_request.url}")
