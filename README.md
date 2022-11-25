@@ -45,9 +45,14 @@ fresh_deps:
 ## Docs
 
 ```
-usage: fresh-deps [-h] [--output-file [OUTPUT_FILE]] [--pypi-index-url PYPI_INDEX_URL] [--gitlab-url GITLAB_URL]
-                  [--gitlab-project-id GITLAB_PROJECT_ID] [--gitlab-default-branch GITLAB_DEFAULT_BRANCH]
-                  [--gitlab-private-token GITLAB_PRIVATE_TOKEN] [--gitlab-assignee GITLAB_ASSIGNEE]
+usage: fresh-deps [-h] [--output-file [OUTPUT_FILE]]
+                  [--pypi-index-url PYPI_INDEX_URL]
+                  [--gitlab-url GITLAB_URL]
+                  [--gitlab-project-id GITLAB_PROJECT_ID]
+                  [--gitlab-default-branch GITLAB_DEFAULT_BRANCH]
+                  [--gitlab-private-token GITLAB_PRIVATE_TOKEN]
+                  [--gitlab-assignee GITLAB_ASSIGNEE]
+                  [--gitlab-allow-multiple-mrs]
                   requirements_in
 
 positional arguments:
@@ -70,4 +75,6 @@ options:
                         https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html
   --gitlab-assignee GITLAB_ASSIGNEE
                         GitLab assignee username (example: 'root')
+  --gitlab-allow-multiple-mrs
+                        Allow multiple opened merge requests
 ```
