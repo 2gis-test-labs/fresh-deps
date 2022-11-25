@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="fresh-deps",
-    version="0.4.0",
+    version="1.0.0",
     description="Keep your Python dependencies fresh",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

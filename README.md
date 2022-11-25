@@ -33,7 +33,7 @@ stages:
 
 fresh_deps:
   stage: update_dependencies
-  image: 2gistestlabs/fresh-deps:0.4.0
+  image: 2gistestlabs/fresh-deps:1.0.0
   variables:
     CI_PRIVATE_TOKEN: $GITLAB_PRIVATE_TOKEN
   script:
